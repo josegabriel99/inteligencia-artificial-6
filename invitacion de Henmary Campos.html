@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invitación — Mayister (Directora)</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  min-height: 100vh;
+  background: #050d1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Rajdhani', sans-serif;
+  overflow: hidden;
+}
+
+.bg {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at 20% 50%, #001a3a 0%, #050d1a 60%);
+  z-index: 0;
+}
+.grid-lines {
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,150,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,150,255,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  z-index: 0;
+}
+.robot-deco {
+  position: fixed; bottom: -10px; right: 30px;
+  font-size: 120px; opacity: 0.07;
+  animation: robotFloat 4s ease-in-out infinite;
+  z-index: 0; user-select: none;
+}
+.robot-deco2 {
+  position: fixed; top: 20px; left: 20px;
+  font-size: 80px; opacity: 0.05;
+  animation: robotFloat 5s ease-in-out infinite reverse;
+  z-index: 0; user-select: none;
+}
+@keyframes robotFloat {
+  0%,100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-15px) rotate(3deg); }
+}
+.particle {
+  position: fixed; width: 3px; height: 3px;
+  background: rgba(0,180,255,0.6); border-radius: 50%;
+  animation: floatP linear infinite;
+}
+@keyframes floatP {
+  0%   { transform: translateY(110vh); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(-10vh) translateX(30px); opacity: 0; }
+}
+
+/* ───────────────────────────────────────────────────────────
+   ROBOT MENSAJERO (capa nueva, no afecta el resto)
+   ─────────────────────────────────────────────────────────── */
+#robotStage {
+  position: fixed;
+  left: 50%;
+  top: 0;
+  width: 0; height: 100%;
+  z-index: 8;
+  pointer-events: none;
+  perspective: 1200px;
+}
+#robotContainer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, 130vh);
+  will-change: transform;
+}
+#robotContainer.phase-rise   { animation: riseUp 2.4s cubic-bezier(.22,.85,.3,1) forwards; }
+#robotContainer.phase-hover  { animation: hoverIdle 2.6s ease-in-out infinite; }
+#robotContainer.phase-launch { animation: launchUp 1.6s cubic-bezier(.45,0,.65,.2) forwards; }
+@keyframes riseUp {
+  0%   { transform: translate(-50%, 130vh) scale(.55); }
+  60%  { transform: translate(-50%, -10vh) scale(1); }
+  80%  { transform: translate(-50%, 4vh) scale(1); }
+  100% { transform: translate(-50%, 0vh) scale(1); }
+}
+@keyframes hoverIdle {
+  0%,100% { transform: translate(-50%, 0vh) rotate(-1.2deg); }
+  50%     { transform: translate(-50%, -1.2vh) rotate(1.2deg); }
+}
+@keyframes launchUp {
+  0%   { transform: translate(-50%, 0vh) scale(1); }
+  15%  { transform: translate(-50%, 4vh) scale(.95); }
+  100% { transform: translate(-50%, -140vh) scale(.4); }
+}
+#robotSVG {
+  width: 240px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 12px 30px rgba(0,80,200,0.45))
+          drop-shadow(0 0 50px rgba(0,180,255,0.18));
+}
+
+/* haz de luz que sostiene el sobre */
+.beam {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  transform: translate(-50%, 0) scaleY(0);
+  transform-origin: top center;
+  width: 130px;
+  height: 110px;
+  background: linear-gradient(180deg, rgba(0,220,255,0.55) 0%, rgba(0,180,255,0.12) 60%, transparent 100%);
+  clip-path: polygon(35% 0, 65% 0, 100% 100%, 0 100%);
+  filter: blur(2px);
+  opacity: 0;
+  transition: opacity .5s ease, transform .6s cubic-bezier(.34,1.56,.64,1);
+  pointer-events: none;
+}
+.beam.active { opacity: 1; transform: translate(-50%, 0) scaleY(1); }
+
+/* sobre que carga el robot */
+#carriedEnv {
+  position: absolute;
+  left: 50%;
+  top: 78%;
+  transform: translate(-50%, -50%) rotate(-4deg) scale(.7);
+  width: 96px; height: 64px;
+  border-radius: 4px;
+  background: linear-gradient(160deg, #f4f8ff 0%, #d8e6ff 100%);
+  border: 1px solid rgba(0,80,180,0.4);
+  box-shadow: 0 8px 18px rgba(0,40,120,0.55), 0 0 24px rgba(0,180,255,0.35);
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+#carriedEnv::before {
+  content:''; position:absolute; inset:0;
+  background:
+    linear-gradient(135deg, transparent 49%, rgba(0,80,180,0.35) 49.5%, rgba(0,80,180,0.35) 50.5%, transparent 51%),
+    linear-gradient(45deg, transparent 49%, rgba(0,80,180,0.35) 49.5%, rgba(0,80,180,0.35) 50.5%, transparent 51%);
+}
+#carriedEnv::after {
+  content:''; position:absolute; left:50%; top:50%;
+  width:18px; height:18px; transform: translate(-50%,-50%);
+  background: radial-gradient(circle, #003080, #0055cc);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(0,180,255,0.7);
+}
+#carriedEnv.visible { opacity: 1; }
+#carriedEnv.dropping { animation: dropEnv 1.1s cubic-bezier(.34,1.56,.64,1) forwards; }
+@keyframes dropEnv {
+  0%   { opacity:1; transform: translate(-50%, -50%) rotate(-4deg) scale(.7); }
+  30%  { opacity:1; transform: translate(-50%, 30%) rotate(2deg) scale(.85); }
+  70%  { opacity:1; transform: translate(-50%, 110%) rotate(-2deg) scale(1); }
+  100% { opacity:0; transform: translate(-50%, 160%) rotate(0) scale(1.05); }
+}
+
+/* propulsores y llamas */
+.thrusters {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 0;
+  pointer-events: none;
+}
+.flame {
+  position: absolute;
+  bottom: 0;
+  width: 22px;
+  height: 0;
+  border-radius: 50% 50% 35% 35%;
+  pointer-events: none;
+  transition: height .3s ease, opacity .3s ease;
+  opacity: 0;
+}
+.flame.left  { left: 52px; }
+.flame.right { right: 52px; }
+.flame .f-inner, .flame .f-outer {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 35% 35%;
+}
+.flame .f-inner {
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(to top, #ffffff 0%, #aaf0ff 25%, #00c8ff 55%, #003a99 100%);
+  opacity: 0.95;
+  filter: blur(.4px);
+}
+.flame .f-outer {
+  width: 100%;
+  height: 110%;
+  background: linear-gradient(to top, rgba(0,200,255,0.65) 0%, rgba(0,90,210,0.35) 55%, transparent 100%);
+  opacity: 0.7;
+  filter: blur(2px);
+}
+.flame.on    { height: 75px;  opacity: 1; }
+.flame.boost { height: 160px; opacity: 1; }
+.flame.on .f-inner   { animation: flick 0.09s ease-in-out infinite alternate; }
+.flame.on .f-outer   { animation: flick 0.14s ease-in-out infinite alternate-reverse; }
+.flame.boost .f-inner{ animation: flick 0.05s ease-in-out infinite alternate; }
+.flame.boost .f-outer{ animation: flick 0.07s ease-in-out infinite alternate-reverse; }
+@keyframes flick {
+  0%   { transform: translateX(-50%) scaleX(0.8) scaleY(1); }
+  100% { transform: translateX(-50%) scaleX(1.15) scaleY(.92); }
+}
+.f-particle {
+  position: absolute;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(0,200,255,0.8);
+  box-shadow: 0 0 8px rgba(0,200,255,0.9);
+  pointer-events: none;
+  animation: fPart 0.7s ease-out forwards;
+}
+@keyframes fPart {
+  0%   { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx, 0), 80px) scale(.2); }
+}
+
+/* onda de choque al estabilizar / despegar */
+.shockwave {
+  position: fixed;
+  left: 50%; top: 50%;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  border: 2px solid rgba(0,200,255,0.7);
+  transform: translate(-50%, -50%) scale(.2);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+.shockwave.fire { animation: shock 1s ease-out forwards; }
+@keyframes shock {
+  0%   { opacity: .9; transform: translate(-50%, -50%) scale(.2); border-width: 3px; }
+  100% { opacity: 0;  transform: translate(-50%, -50%) scale(4); border-width: .5px; }
+}
+
+/* ── ESCENA ── */
+.scene {
+  position: relative; z-index: 10;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 100vh; gap: 20px;
+}
+
+.hint {
+  color: rgba(0,200,255,0.85);
+  font-size: 11px; letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(14px);
+  filter: blur(4px);
+  pointer-events: none;
+  transition: opacity .8s cubic-bezier(.34,1.56,.64,1),
+              transform .8s cubic-bezier(.34,1.56,.64,1),
+              filter .8s ease;
+  text-shadow: 0 0 14px rgba(0,180,255,0.6), 0 0 28px rgba(0,120,255,0.35);
+  position: relative;
+}
+.hint.show {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  animation: pulse 2.2s ease-in-out 0.9s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:.55} 50%{opacity:1} }
+.hint.hide {
+  opacity: 0 !important;
+  transform: translateY(-8px) !important;
+  filter: blur(3px) !important;
+  animation: none !important;
+  transition: opacity .35s ease, transform .35s ease, filter .35s ease !important;
+}
+
+/* ── SOBRE ── */
+.env-wrap {
+  cursor: pointer;
+  position: relative;
+  width: 380px; height: 240px;
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(.34,1.56,.64,1);
+  opacity: 0;
+  transform: scale(.5) translateY(40px);
+  pointer-events: none;
+}
+.env-wrap.revealed {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+.env-wrap.desaparecer {
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+}
+
+.env-body {
+  position: absolute; inset: 0;
+  background: linear-gradient(160deg, #061d3e 0%, #0a2a55 60%, #0d3370 100%);
+  border-radius: 6px;
+  border: 1px solid rgba(0,150,255,0.35);
+  box-shadow: 0 0 40px rgba(0,100,255,0.25), inset 0 0 30px rgba(0,50,150,0.2);
+  overflow: hidden;
+}
+.env-body::before {
+  content:''; position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(0,150,255,0.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,150,255,0.06) 1px,transparent 1px);
+  background-size: 20px 20px;
+}
+.tri-left {
+  position:absolute; left:0; bottom:0; width:0; height:0;
+  border-style:solid; border-width: 120px 190px 0 0;
+  border-color: rgba(0,80,180,0.5) transparent transparent transparent;
+}
+.tri-right {
+  position:absolute; right:0; bottom:0; width:0; height:0;
+  border-style:solid; border-width: 0 0 120px 190px;
+  border-color: transparent transparent rgba(0,80,180,0.5) transparent;
+}
+.tri-bottom {
+  position:absolute; left:0; bottom:0; width:0; height:0;
+  border-style:solid; border-width: 0 190px 120px 190px;
+  border-color: transparent transparent rgba(0,60,150,0.4) transparent;
+}
+.env-flap {
+  position:absolute; top:0; left:0;
+  width:380px; height:0;
+  border-style:solid; border-width: 130px 190px 0 190px;
+  border-color: #0d3a7a transparent transparent transparent;
+  transform-origin: top center;
+  transition: transform 0.9s cubic-bezier(.4,0,.2,1);
+  z-index: 20;
+}
+.env-wrap.open .env-flap { transform: rotateX(180deg); }
+
+.sello {
+  position:absolute; top:50%; left:50%;
+  transform: translate(-50%,-50%);
+  width:56px; height:56px;
+  background: linear-gradient(135deg, #003080, #0055cc);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:26px;
+  border: 2px solid rgba(0,180,255,0.6);
+  box-shadow: 0 0 20px rgba(0,150,255,0.4);
+  z-index: 25;
+  transition: opacity .3s .1s, transform .3s ease, box-shadow .3s ease;
+  animation: selloGlow 2s ease-in-out infinite;
+}
+.env-wrap.revealed .sello {
+  animation: selloGlow 2s ease-in-out infinite, selloReveal .8s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes selloGlow {
+  0%,100% { box-shadow: 0 0 20px rgba(0,150,255,0.4), 0 0 0px rgba(0,150,255,0); }
+  50%     { box-shadow: 0 0 30px rgba(0,150,255,0.7), 0 0 60px rgba(0,150,255,0.2); }
+}
+@keyframes selloReveal {
+  0%   { transform: translate(-50%,-50%) scale(.3) rotate(-20deg); }
+  60%  { transform: translate(-50%,-50%) scale(1.15) rotate(5deg); }
+  100% { transform: translate(-50%,-50%) scale(1) rotate(0deg); }
+}
+.env-wrap.open .sello {
+  animation: selloBounceOut .7s cubic-bezier(.34,1.56,.64,1) forwards;
+  pointer-events: none;
+}
+@keyframes selloBounceOut {
+  0%   { transform: translate(-50%,-50%) scale(1) rotate(0deg); opacity: 1; }
+  30%  { transform: translate(-50%,-50%) scale(1.35) rotate(15deg); opacity: 1; }
+  60%  { transform: translate(-50%,-50%) scale(.8) rotate(-10deg); opacity: .8; }
+  100% { transform: translate(-50%,-50%) scale(.3) rotate(-30deg); opacity: 0; }
+}
+
+/* ── CARTA ── */
+.carta-wrap {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease 1.2s;
+  overflow-y: auto;
+  padding: 20px;
+}
+.carta-wrap.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.carta-wrap.hiding {
+  opacity: 0 !important;
+  transition: opacity 0.5s ease 0s !important;
+  pointer-events: none !important;
+}
+
+.carta {
+  width: 340px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.8), 0 0 60px rgba(0,100,255,0.2);
+  transform: translateY(40px) scale(0.9);
+  transition: transform 0.6s cubic-bezier(.4,0,.2,1) 1.3s;
+  position: relative;
+}
+.carta-wrap.visible .carta {
+  transform: translateY(0) scale(1);
+}
+
+/* Encabezado */
+.c-head {
+  background: linear-gradient(135deg, #050d1a, #0a2a55);
+  padding: 18px 20px 14px;
+  border-radius: 8px 8px 0 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 2px solid rgba(0,150,255,0.3);
+}
+.c-head::before {
+  content:''; position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(0,150,255,0.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,150,255,0.05) 1px,transparent 1px);
+  background-size:15px 15px;
+}
+.c-robot { font-size:32px; display:block; margin-bottom:5px; position:relative; }
+.c-inst {
+  font-size: 7.5px; color: rgba(0,200,255,0.7);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  line-height: 1.8; position: relative;
+}
+.c-badge {
+  display: inline-block;
+  background: rgba(0,100,255,0.3);
+  border: 1px solid rgba(0,180,255,0.4);
+  color: #00d4ff; font-size: 7px;
+  letter-spacing: 2px; padding: 3px 12px;
+  border-radius: 20px; margin-top: 7px;
+  text-transform: uppercase; position: relative;
+}
+
+/* Cuerpo */
+.c-body { padding: 14px 18px 16px; background: white; }
+.c-honor {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 9px; color: #0055cc;
+  text-align: center; letter-spacing: 2px;
+  text-transform: uppercase; margin-bottom: 4px;
+}
+.c-nombre {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; color: #050d1a;
+  text-align: center; font-weight: 600;
+  border-bottom: 2px solid #e8f0ff;
+  padding-bottom: 10px; margin-bottom: 10px; line-height: 1.2;
+}
+.c-cargo {
+  display: block; font-family: 'Rajdhani', sans-serif;
+  font-size: 11px; color: #0055cc;
+  letter-spacing: 2px; text-transform: uppercase; font-weight: 600;
+}
+.c-texto {
+  font-size: 9px; color: #444;
+  text-align: center; line-height: 1.8; margin-bottom: 10px;
+}
+.c-proyecto {
+  background: linear-gradient(135deg, #f0f6ff, #e4efff);
+  border-left: 3px solid #0055cc;
+  border-radius: 0 6px 6px 0; padding: 8px 12px; margin: 8px 0;
+}
+.c-proyecto p {
+  font-family: 'Playfair Display', serif;
+  font-style: italic; font-size: 8.5px;
+  color: #0a2a55; line-height: 1.7;
+}
+.c-datos { display: flex; gap: 6px; margin: 10px 0; }
+.c-dato {
+  flex:1;
+  background: linear-gradient(135deg, #050d1a, #0a2255);
+  border-radius: 6px; padding: 7px 6px; text-align: center;
+  border: 1px solid rgba(0,150,255,0.2);
+}
+.c-dato-label {
+  font-size: 6.5px; color: rgba(0,200,255,0.6);
+  letter-spacing: 1px; text-transform: uppercase;
+  display: block; margin-bottom: 2px;
+}
+.c-dato-val {
+  font-size: 8px; color: #fff;
+  font-weight: 700; display: block; line-height: 1.4;
+}
+.c-autores {
+  font-size: 7.5px; color: #777;
+  text-align: center; padding-top: 8px;
+  border-top: 1px solid #eee; line-height: 1.9;
+}
+.c-autores strong {
+  color: #0a2a55; display: block;
+  font-size: 8.5px; margin-bottom: 1px;
+}
+
+/* Botón de confirmación */
+.confirm-section {
+  padding: 14px 18px 16px;
+  background: white;
+  border-top: 1px solid #e8f0ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.confirm-label {
+  font-size: 8px;
+  color: #0055cc;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: 'Rajdhani', sans-serif;
+}
+.btn-confirm {
+  position: relative;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: none;
+  padding: 0;
+  width: 200px;
+  height: 46px;
+}
+.btn-confirm-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #003080, #0055cc, #0080ff);
+  border-radius: 23px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(0,100,255,0.5), 0 0 0 0 rgba(0,180,255,0);
+  animation: btnPulse 2.5s ease-in-out infinite;
+}
+@keyframes btnPulse {
+  0%,100% { box-shadow: 0 4px 20px rgba(0,100,255,0.5), 0 0 0 0 rgba(0,180,255,0.4); }
+  50% { box-shadow: 0 4px 30px rgba(0,100,255,0.7), 0 0 0 8px rgba(0,180,255,0); }
+}
+.btn-confirm:hover .btn-confirm-inner {
+  transform: scale(1.04);
+  box-shadow: 0 6px 28px rgba(0,100,255,0.7);
+  animation: none;
+}
+.btn-confirm:active .btn-confirm-inner {
+  transform: scale(0.97);
+}
+.btn-confirm-inner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: rgba(255,255,255,0.15);
+  transform: skewX(-20deg);
+  animation: btnShine 3s ease-in-out infinite;
+}
+@keyframes btnShine {
+  0% { left: -60%; }
+  40%,100% { left: 130%; }
+}
+.btn-confirm-text {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+.btn-confirm-icon {
+  font-size: 14px;
+  position: relative;
+  z-index: 1;
+}
+.btn-confirm.loading .btn-confirm-inner {
+  background: linear-gradient(135deg, #003080, #0044aa);
+  animation: none;
+}
+.btn-confirm.done .btn-confirm-inner {
+  background: linear-gradient(135deg, #005500, #00aa44);
+  animation: none;
+  box-shadow: 0 4px 20px rgba(0,180,80,0.5);
+}
+.btn-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Confetti */
+.confetti-piece {
+  position: fixed;
+  top: 50%;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  z-index: 200;
+  pointer-events: none;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(200px) rotate(var(--rotate)); opacity: 0; }
+}
+
+/* Pie */
+.c-foot {
+  background: linear-gradient(135deg, #050d1a, #0a2a55);
+  padding: 9px 16px; border-radius: 0 0 8px 8px;
+  display: flex; align-items: center;
+  justify-content: center; gap: 8px;
+  border-top: 1px solid rgba(0,150,255,0.2);
+}
+.c-foot p {
+  font-size: 7px; color: rgba(0,200,255,0.5);
+  letter-spacing: 1.5px; text-transform: uppercase;
+}
+
+/* ── TARJETA DE GRACIAS ── */
+.gracias-wrap {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 150; pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  padding: 20px;
+}
+.gracias-wrap.visible { opacity: 1; pointer-events: auto; }
+.gracias-carta {
+  width: 340px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.8), 0 0 80px rgba(0,200,100,0.2);
+  transform: scale(0.85) translateY(30px);
+  transition: transform 0.7s cubic-bezier(.34,1.56,.64,1);
+  overflow: hidden;
+}
+.gracias-wrap.visible .gracias-carta {
+  transform: scale(1) translateY(0);
+}
+.gracias-head {
+  background: linear-gradient(135deg, #002a10, #005520, #007a30);
+  padding: 28px 20px 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.gracias-head::before {
+  content:''; position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(0,255,100,0.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,255,100,0.05) 1px,transparent 1px);
+  background-size:15px 15px;
+}
+.gracias-emoji {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 8px;
+  position: relative;
+  animation: bounceEmoji 1s ease-in-out infinite alternate;
+}
+@keyframes bounceEmoji {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-6px) scale(1.08); }
+}
+.gracias-titulo {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: #fff;
+  font-weight: 600;
+  position: relative;
+  line-height: 1.3;
+  text-shadow: 0 0 20px rgba(0,255,100,0.4);
+}
+.gracias-subtitulo {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 9px;
+  color: rgba(0,255,150,0.7);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 6px;
+  position: relative;
+}
+.gracias-badge {
+  display: inline-block;
+  background: rgba(0,200,80,0.2);
+  border: 1px solid rgba(0,255,120,0.4);
+  color: #00ff88;
+  font-size: 7px;
+  letter-spacing: 2px;
+  padding: 3px 14px;
+  border-radius: 20px;
+  margin-top: 10px;
+  text-transform: uppercase;
+  position: relative;
+  animation: badgeGlow 2s ease-in-out infinite;
+}
+@keyframes badgeGlow {
+  0%,100% { box-shadow: 0 0 8px rgba(0,255,120,0.3); }
+  50% { box-shadow: 0 0 18px rgba(0,255,120,0.6); }
+}
+.gracias-body {
+  padding: 20px 22px 22px;
+  background: white;
+  text-align: center;
+}
+.gracias-nombre {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  color: #050d1a;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.gracias-cargo {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  color: #007a30;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.gracias-mensaje {
+  font-size: 10px;
+  color: #444;
+  line-height: 1.9;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #f0fff4, #e4fff0);
+  border-left: 3px solid #00aa44;
+  border-radius: 0 8px 8px 0;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  text-align: left;
+}
+.gracias-stars {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.gracias-star {
+  font-size: 18px;
+  animation: starPop 0.4s ease-out both;
+}
+.gracias-star:nth-child(1) { animation-delay: 0.1s; }
+.gracias-star:nth-child(2) { animation-delay: 0.2s; }
+.gracias-star:nth-child(3) { animation-delay: 0.3s; }
+.gracias-star:nth-child(4) { animation-delay: 0.4s; }
+.gracias-star:nth-child(5) { animation-delay: 0.5s; }
+@keyframes starPop {
+  0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+  70% { transform: scale(1.3) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.gracias-firmado {
+  font-size: 7.5px;
+  color: #999;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+  line-height: 1.9;
+}
+.gracias-firmado strong {
+  color: #0a2a55;
+  display: block;
+  font-size: 8.5px;
+  margin-bottom: 2px;
+}
+.gracias-foot {
+  background: linear-gradient(135deg, #002a10, #005520);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-top: 1px solid rgba(0,200,80,0.2);
+}
+.gracias-foot p {
+  font-size: 7px;
+  color: rgba(0,255,120,0.5);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="grid-lines"></div>
+<div class="robot-deco">🤖</div>
+<div class="robot-deco2">🤖</div>
+
+<div class="shockwave" id="shockwave"></div>
+
+<!-- ═══ ROBOT MENSAJERO ═══ -->
+<div id="robotStage">
+  <div id="robotContainer">
+    <div class="beam" id="beam"></div>
+    <div id="carriedEnv"></div>
+    <svg id="robotSVG" viewBox="0 0 220 320" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gBody" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"  stop-color="#2a5aa0"/>
+          <stop offset="55%" stop-color="#143a78"/>
+          <stop offset="100%" stop-color="#081d44"/>
+        </linearGradient>
+        <linearGradient id="gHead" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#3a6cb8"/>
+          <stop offset="100%" stop-color="#0e2a5e"/>
+        </linearGradient>
+        <linearGradient id="gVisor" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#001a3a"/>
+          <stop offset="100%" stop-color="#003366"/>
+        </linearGradient>
+        <linearGradient id="gMetal" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#5e7ba6"/>
+          <stop offset="100%" stop-color="#1e3a66"/>
+        </linearGradient>
+        <radialGradient id="gEye" cx=".5" cy=".5" r=".5">
+          <stop offset="0%"  stop-color="#ffffff"/>
+          <stop offset="40%" stop-color="#7fe9ff"/>
+          <stop offset="100%" stop-color="#0088ff"/>
+        </radialGradient>
+        <radialGradient id="gCore" cx=".5" cy=".5" r=".5">
+          <stop offset="0%"  stop-color="#ffffff"/>
+          <stop offset="30%" stop-color="#7fe9ff"/>
+          <stop offset="70%" stop-color="#0099ff"/>
+          <stop offset="100%" stop-color="#001e5a"/>
+        </radialGradient>
+        <linearGradient id="gThruster" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#3a5d96"/>
+          <stop offset="100%" stop-color="#06163a"/>
+        </linearGradient>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- antena -->
+      <line x1="110" y1="30" x2="110" y2="58" stroke="#5e7ba6" stroke-width="2.5"/>
+      <circle cx="110" cy="26" r="6" fill="url(#gEye)" filter="url(#glow)">
+        <animate attributeName="r" values="5;7;5" dur="1.4s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- cabeza -->
+      <rect x="68" y="55" width="84" height="70" rx="18" fill="url(#gHead)" stroke="#0a234e" stroke-width="1.5"/>
+      <rect x="58" y="74" width="12" height="34" rx="4" fill="url(#gMetal)" stroke="#0a234e" stroke-width="1"/>
+      <rect x="150" y="74" width="12" height="34" rx="4" fill="url(#gMetal)" stroke="#0a234e" stroke-width="1"/>
+      <circle cx="64" cy="91" r="3" fill="#00d4ff" filter="url(#glow)"/>
+      <circle cx="156" cy="91" r="3" fill="#00d4ff" filter="url(#glow)"/>
+
+      <!-- visor -->
+      <rect x="78" y="74" width="64" height="32" rx="12" fill="url(#gVisor)" stroke="#0099ff" stroke-width="1.5"/>
+      <rect x="82" y="78" width="20" height="6" rx="3" fill="rgba(255,255,255,0.18)"/>
+      <circle cx="92"  cy="90" r="6.5" fill="url(#gEye)" filter="url(#glow)">
+        <animate attributeName="r" values="6;7;6" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="128" cy="90" r="6.5" fill="url(#gEye)" filter="url(#glow)">
+        <animate attributeName="r" values="6;7;6" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <rect x="92" y="112" width="36" height="6" rx="2" fill="#0a234e"/>
+      <rect x="96"  y="114" width="4" height="2" fill="#00d4ff"/>
+      <rect x="104" y="114" width="4" height="2" fill="#00d4ff"/>
+      <rect x="112" y="114" width="4" height="2" fill="#00d4ff"/>
+      <rect x="120" y="114" width="4" height="2" fill="#00d4ff"/>
+
+      <!-- cuello -->
+      <rect x="96" y="125" width="28" height="10" rx="3" fill="url(#gMetal)"/>
+
+      <!-- cuerpo -->
+      <path d="M55 145 Q55 132 75 132 L145 132 Q165 132 165 145 L165 220 Q165 240 145 240 L75 240 Q55 240 55 220 Z"
+            fill="url(#gBody)" stroke="#0a234e" stroke-width="1.5"/>
+      <path d="M55 160 L165 160" stroke="rgba(0,180,255,0.25)" stroke-width="1"/>
+      <path d="M55 210 L165 210" stroke="rgba(0,180,255,0.25)" stroke-width="1"/>
+
+      <!-- núcleo -->
+      <circle cx="110" cy="185" r="22" fill="url(#gCore)" filter="url(#glow)">
+        <animate attributeName="r" values="21;24;21" dur="1.6s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="110" cy="185" r="22" fill="none" stroke="rgba(0,200,255,0.5)" stroke-width="1.5"/>
+      <circle cx="110" cy="185" r="28" fill="none" stroke="rgba(0,180,255,0.18)" stroke-width="1"/>
+
+      <!-- luces laterales -->
+      <circle cx="72"  cy="170" r="2.5" fill="#00d4ff" filter="url(#glow)"/>
+      <circle cx="148" cy="170" r="2.5" fill="#ff6a00" filter="url(#glow)"/>
+      <circle cx="72"  cy="225" r="2.5" fill="#ff6a00" filter="url(#glow)"/>
+      <circle cx="148" cy="225" r="2.5" fill="#00d4ff" filter="url(#glow)"/>
+
+      <!-- hombros -->
+      <circle cx="50"  cy="148" r="11" fill="url(#gMetal)" stroke="#0a234e" stroke-width="1"/>
+      <circle cx="170" cy="148" r="11" fill="url(#gMetal)" stroke="#0a234e" stroke-width="1"/>
+
+      <!-- brazos -->
+      <path d="M44 158 Q30 180 50 215 L72 222 Q72 200 64 175 Z" fill="url(#gBody)" stroke="#0a234e" stroke-width="1.2"/>
+      <path d="M176 158 Q190 180 170 215 L148 222 Q148 200 156 175 Z" fill="url(#gBody)" stroke="#0a234e" stroke-width="1.2"/>
+      <rect x="46"  y="210" width="30" height="18" rx="6" fill="url(#gMetal)" stroke="#0a234e" stroke-width="1"/>
+      <rect x="144" y="210" width="30" height="18" rx="6" fill="url(#gMetal)" stroke="#0a234e" stroke-width="1"/>
+      <circle cx="61"  cy="219" r="2.5" fill="#00d4ff" filter="url(#glow)"/>
+      <circle cx="159" cy="219" r="2.5" fill="#00d4ff" filter="url(#glow)"/>
+
+      <!-- propulsores -->
+      <rect x="68"  y="245" width="28" height="34" rx="8" fill="url(#gThruster)" stroke="#0a234e" stroke-width="1.2"/>
+      <rect x="124" y="245" width="28" height="34" rx="8" fill="url(#gThruster)" stroke="#0a234e" stroke-width="1.2"/>
+      <ellipse cx="82"  cy="278" rx="11" ry="3" fill="#00111f" stroke="#0099ff" stroke-width="1"/>
+      <ellipse cx="138" cy="278" rx="11" ry="3" fill="#00111f" stroke="#0099ff" stroke-width="1"/>
+      <circle cx="82"  cy="252" r="2.2" fill="#00d4ff" filter="url(#glow)"/>
+      <circle cx="138" cy="252" r="2.2" fill="#00d4ff" filter="url(#glow)"/>
+
+      <!-- aletas -->
+      <path d="M55 200 L30 215 L30 240 L55 230 Z" fill="url(#gBody)" stroke="#0a234e" stroke-width="1"/>
+      <path d="M165 200 L190 215 L190 240 L165 230 Z" fill="url(#gBody)" stroke="#0a234e" stroke-width="1"/>
+    </svg>
+
+    <div class="thrusters">
+      <div class="flame left"><div class="f-outer"></div><div class="f-inner"></div></div>
+      <div class="flame right"><div class="f-outer"></div><div class="f-inner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ESCENA SOBRE -->
+<div class="scene" id="scena">
+  <p class="hint" id="hint">▶ Toca el sobre para abrir</p>
+
+  <div class="env-wrap" id="envWrap" onclick="abrir()">
+    <div class="env-body">
+      <div class="tri-left"></div>
+      <div class="tri-right"></div>
+      <div class="tri-bottom"></div>
+    </div>
+    <div class="sello">🤖</div>
+    <div class="env-flap"></div>
+  </div>
+</div>
+
+<!-- CARTA FLOTANTE -->
+<div class="carta-wrap" id="cartaWrap">
+  <div class="carta">
+    <div class="c-head">
+      <span class="c-robot">🤖</span>
+      <div class="c-inst">
+        República Bolivariana de Venezuela<br>
+        Ministerio del Poder Popular para la Educación<br>
+        U.E. "Beata Gianna Beretta" · Guacara, Edo. Carabobo
+      </div>
+      <span class="c-badge">✦ Invitación Especial ✦</span>
+    </div>
+    <div class="c-body">
+      <p class="c-honor">La presente invitación va dirigida a</p>
+      <div class="c-nombre">
+        Henmary Campos<br>
+        <span class="c-cargo">Licenciada</span>
+      </div>
+      <p class="c-texto">Nos complace invitarle a la presentación y defensa del proyecto de investigación:</p>
+      <div class="c-proyecto">
+        <p>"Demostrar cómo la inteligencia artificial asiste a los estudiantes de media general a realizar sus actividades académicas en la U.E. Beata Gianna Beretta"</p>
+      </div>
+      <div class="c-datos">
+        <div class="c-dato">
+          <span class="c-dato-label">📅 Fecha</span>
+          <span class="c-dato-val">Junio 2026</span>
+        </div>
+        <div class="c-dato">
+          <span class="c-dato-label">📍 Lugar</span>
+          <span class="c-dato-val">U.E. Beata Gianna Beretta</span>
+        </div>
+        <div class="c-dato">
+          <span class="c-dato-label">🎓 Año</span>
+          <span class="c-dato-val">5to Año</span>
+        </div>
+      </div>
+      <div class="c-autores">
+        <strong>Presentado por:</strong>
+        José Carrillo · C.I. V-33.751.673 &nbsp;|&nbsp; Juan Bustos · C.I. V-36.362.095<br>
+        <span style="font-size:7px;color:#999;">
+          Tut. Metodológica: Mgs. Yurima Betancourt &nbsp;·&nbsp; Tut. Especialista: Lcda. Hinmary Campos
+        </span>
+      </div>
+    </div>
+
+    <!-- Botón de confirmación creativo -->
+    <div class="confirm-section">
+      <span class="confirm-label">¿Confirmas tu asistencia?</span>
+      <button class="btn-confirm" id="btnConfirm" onclick="confirmar()">
+        <div class="btn-confirm-inner" id="btnInner">
+          <span class="btn-confirm-icon" id="btnIcon1">✅</span>
+          <span class="btn-confirm-text" id="btnText">¡Confirmar!</span>
+          <span class="btn-confirm-icon" id="btnIcon2">🤖</span>
+        </div>
+      </button>
+    </div>
+
+    <div class="c-foot">
+      <span>🤖</span>
+      <p>Su presencia es muy importante para nosotros</p>
+      <span>🤖</span>
+    </div>
+  </div>
+</div>
+
+<!-- TARJETA DE GRACIAS -->
+<div class="gracias-wrap" id="graciasWrap">
+  <div class="gracias-carta">
+    <div class="gracias-head">
+      <span class="gracias-emoji">🎊</span>
+      <div class="gracias-titulo">¡Muchas Gracias<br>por Asistir!</div>
+      <div class="gracias-subtitulo">Confirmación recibida con éxito</div>
+      <span class="gracias-badge">✦ Asistencia Confirmada ✦</span>
+    </div>
+    <div class="gracias-body">
+      <div class="gracias-nombre">Henmary Campos</div>
+      <div class="gracias-cargo">Licenciada</div>
+      <div class="gracias-stars">
+        <span class="gracias-star">⭐</span>
+        <span class="gracias-star">⭐</span>
+        <span class="gracias-star">⭐</span>
+        <span class="gracias-star">⭐</span>
+        <span class="gracias-star">⭐</span>
+      </div>
+      <div class="gracias-mensaje">
+        Su presencia en nuestra defensa de proyecto es un honor para nosotros. Gracias por dedicar su tiempo y apoyo a este trabajo de investigación sobre inteligencia artificial. ¡La esperamos con mucho entusiasmo! 🤖✨
+      </div>
+      <div class="gracias-firmado">
+        <strong>Con gratitud:</strong>
+        José Carrillo &nbsp;·&nbsp; Juan Bustos<br>
+        <span style="font-size:7px;color:#bbb;">5to Año · U.E. Beata Gianna Beretta · Junio 2026</span>
+      </div>
+    </div>
+    <div class="gracias-foot">
+      <span>🤖</span>
+      <p>¡Nos vemos en la presentación!</p>
+      <span>🎓</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Partículas de fondo
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.classList.add('particle');
+    p.style.cssText = `left:${Math.random()*100}%;width:${Math.random()*3+1}px;height:${Math.random()*3+1}px;animation-duration:${6+Math.random()*10}s;animation-delay:${Math.random()*8}s;`;
+    document.body.appendChild(p);
+  }
+
+  let opened = false;
+  let confirmed = false;
+
+  // ───── SONIDOS (Web Audio API) ─────
+  let audioCtx = null;
+  function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+  function playSound(type) {
+    try {
+      initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const ctx = audioCtx, now = ctx.currentTime;
+      if (type === 'confirm') {
+        // Acorde corto de celebración
+        [523, 659, 784].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.2, now + i * 0.08);
+          g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.4);
+          osc.connect(g); g.connect(ctx.destination);
+          osc.start(now + i * 0.08); osc.stop(now + i * 0.08 + 0.4);
+        });
+      }
+    } catch(e) { /* silencioso */ }
+  }
+
+  // ───── ROBOT MENSAJERO ─────
+  const robot     = document.getElementById('robotContainer');
+  const flameL    = document.querySelector('.flame.left');
+  const flameR    = document.querySelector('.flame.right');
+  const carried   = document.getElementById('carriedEnv');
+  const beam      = document.getElementById('beam');
+  const envWrap   = document.getElementById('envWrap');
+  const hint      = document.getElementById('hint');
+  const shockwave = document.getElementById('shockwave');
+
+  let partInterval = null;
+  function startFlameParticles(intensity = 1) {
+    stopFlameParticles();
+    partInterval = setInterval(() => {
+      [flameL, flameR].forEach(fl => {
+        if (!fl.classList.contains('on') && !fl.classList.contains('boost')) return;
+        const p = document.createElement('div');
+        p.className = 'f-particle';
+        const dx = (Math.random()*30 - 15);
+        p.style.setProperty('--dx', dx + 'px');
+        p.style.left = '50%';
+        p.style.bottom = (-(Math.random()*30)) + 'px';
+        p.style.transform = `translateX(${dx*0.4 - 50}%)`;
+        p.style.background = `rgba(${Math.random()>0.5?'120,230,255':'255,255,255'},${0.6+Math.random()*0.4})`;
+        fl.appendChild(p);
+        setTimeout(()=> p.remove(), 700);
+      });
+    }, intensity > 1 ? 30 : 70);
+  }
+  function stopFlameParticles(){
+    if (partInterval) { clearInterval(partInterval); partInterval = null; }
+  }
+  function triggerShock(){
+    shockwave.classList.remove('fire');
+    void shockwave.offsetWidth;
+    shockwave.classList.add('fire');
+  }
+
+  function runRobotSequence(){
+    // Fase 1: encender propulsores y subir con el sobre
+    flameL.classList.add('on');
+    flameR.classList.add('on');
+    startFlameParticles(1);
+    setTimeout(()=> {
+      carried.classList.add('visible');
+      beam.classList.add('active');
+    }, 200);
+    robot.classList.add('phase-rise');
+
+    // Llegada: hover
+    setTimeout(()=>{
+      robot.classList.remove('phase-rise');
+      robot.classList.add('phase-hover');
+      triggerShock();
+    }, 2400);
+
+    // Entrega del sobre con transición suave
+    setTimeout(()=>{
+      beam.classList.remove('active');
+      carried.classList.add('dropping');
+      setTimeout(()=> {
+        envWrap.classList.add('revealed');
+        hint.classList.add('show');
+      }, 550);
+    }, 3500);
+
+    // Despegue rápido hacia arriba
+    setTimeout(()=>{
+      robot.classList.remove('phase-hover');
+      flameL.classList.remove('on'); flameR.classList.remove('on');
+      flameL.classList.add('boost'); flameR.classList.add('boost');
+      startFlameParticles(2);
+      robot.classList.add('phase-launch');
+      triggerShock();
+    }, 4900);
+
+    // Limpieza
+    setTimeout(()=>{
+      flameL.classList.remove('boost'); flameR.classList.remove('boost');
+      stopFlameParticles();
+      document.getElementById('robotStage').style.display = 'none';
+    }, 6700);
+  }
+
+  window.addEventListener('load', () => {
+    setTimeout(runRobotSequence, 350);
+  });
+
+  // ───── LÓGICA ORIGINAL (sin cambios funcionales) ─────
+  function abrir() {
+    if (opened) return;
+    if (!envWrap.classList.contains('revealed')) return; // espera a que el robot lo entregue
+    opened = true;
+
+    const env = document.getElementById('envWrap');
+    const hintEl = document.getElementById('hint');
+    const carta = document.getElementById('cartaWrap');
+
+    hintEl.classList.add('hide');
+    env.classList.add('open');
+
+    setTimeout(() => {
+      env.classList.add('desaparecer');
+    }, 800);
+
+    setTimeout(() => {
+      carta.classList.add('visible');
+    }, 1100);
+  }
+
+  function confirmar() {
+    if (confirmed) return;
+    confirmed = true;
+    playSound('confirm');
+
+    const btn = document.getElementById('btnConfirm');
+    const inner = document.getElementById('btnInner');
+    const icon1 = document.getElementById('btnIcon1');
+    const text = document.getElementById('btnText');
+    const icon2 = document.getElementById('btnIcon2');
+
+    btn.classList.add('loading');
+    btn.disabled = true;
+    icon1.textContent = '';
+    icon2.textContent = '';
+    text.textContent = 'Enviando...';
+
+    const spinner = document.createElement('div');
+    spinner.className = 'btn-spinner';
+    inner.insertBefore(spinner, text);
+
+    const colors = ['#00d4ff','#0055cc','#00ff88','#ffcc00','#ff6b6b','#a855f7'];
+    for (let i = 0; i < 30; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      const rotate = (Math.random() * 720 - 360) + 'deg';
+      c.style.cssText = `left:${20+Math.random()*60}%;background:${colors[Math.floor(Math.random()*colors.length)]};animation-delay:${Math.random()*0.5}s;animation-duration:${1+Math.random()}s;--rotate:${rotate};`;
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 2000);
+    }
+
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      btn.classList.add('done');
+      spinner.remove();
+      icon1.textContent = '🎉';
+      text.textContent = '¡Confirmado!';
+      icon2.textContent = '';
+
+      const carta = document.getElementById('cartaWrap');
+      carta.classList.remove('visible');
+      carta.classList.add('hiding');
+
+      setTimeout(() => {
+        document.getElementById('graciasWrap').classList.add('visible');
+      }, 600);
+    }, 1200);
+  }
+</script>
+</body>
+</html>
